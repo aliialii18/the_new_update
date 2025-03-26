@@ -1,0 +1,21 @@
+/* Custom CSS */
+body {
+    font-family: 'Tajawal', sans-serif;
+    background: #f8f9fa;
+}
+
+.code-editor {
+    direction: ltr;
+    background: #1e1e1e;
+    color: #d4d4d4;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.problem-description {
+    direction: rtl;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+}

@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سلسلة حل المشكلات (Problem Solving) الرمضانية</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- تضمين مكتبة Brython لتشغيل كود بايثون في المتصفح -->
+  <script src="https://cdn.jsdelivr.net/npm/brython@3.9.5/brython.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/brython@3.9.5/brython_stdlib.js"></script>
+  <style>
+    /* إعادة تعيين الأنماط الأساسية */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      direction: rtl;
+      background: linear-gradient(135deg, #74ebd5, #acb6e5);
+      color: #333;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    /* نمط خانة وصف التحدي: خط أكبر، سميك ولون نص بارز */
+    #challengeDescription {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #000;
+    }
+    /* نمط رسالة النتيجة */
+    .result {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 4px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .result.success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .result.error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    /* رأس الصفحة ثابت */
+    header {
+      background-color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 10px 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+    }
+    header .hamburger {
+      margin-left: 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 20px;
+      width: 30px;
+    }
+    header .hamburger span {
+      display: block;
+      width: 100%;
+      height: 3px;
+      background-color: #333;
+      border-radius: 3px;
+    }
+    header h1 { font-size: 1.2em; }
+    /* القائمة الجانبية */
+    .drawer {
+      position: fixed;
+      top: 60px;
+      right: -260px;
+      width: 250px;
+      height: calc(100% - 60px);
+      background-color: #fff;
+      box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+      transition: right 0.3s ease;
+      overflow-y: auto;
+      padding: 20px;
+      z-index: 999;
+    }
+    .drawer.open { right: 0; }
+    .drawer a {
+      display: block;
+      padding: 10px;
+      text-decoration: none;
+      color: #333;
+      border-bottom: 1px solid #eee;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    .drawer a.active {
+      background-color: #74ebd5;
+      color: #fff;
+      font-weight: bold;
+    }
+    /* المحتوى الأساسي */
+    .main-content {
+      transition: transform 0.3s ease;
+      padding: 80px 20px 20px;
+    }
+    .main-content.shifted { transform: translateX(-250px); }
+    /* تصميم الحاويات */
+    .container {
+      margin-bottom: 20px;
+      background: rgba(255,255,255,0.8);
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    textarea {
+      width: 100%;
+      height: 200px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: vertical;
+      font-family: monospace;
+    }
+    textarea[readonly] {
+      background-color: #f5f5f5;
+      color: #555;
+    }
+    button {
+      background-color: #74ebd5;
+      border: none;
+      color: #fff;
+      padding: 10px 20px;
+      margin-top: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background-color 0.3s ease;
+    }
+    button:hover { background-color: #67d8c1; }
+    /* المربع الذي يظهر الحل */
+    .hidden-solution {
+      display: none;
+      background-color: #f9f9f9;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+    /* استجابة التصميم */
+    @media (max-width: 768px) {
+      header h1 { font-size: 1em; }
+      header .hamburger { width: 25px; height: 18px; }
+      .drawer { width: 200px; }
+      .main-content.shifted { transform: translateX(-200px); }
+    }
+  </style>
+</head>
+<body onload="brython(); markActiveLink();">
+  <!-- رأس الصفحة -->
+  <header>
+    <div class="hamburger" onclick="toggleDrawer()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <h1>سلسلة حل المشكلات (Problem Solving) الرمضانية</h1>
+  </header>
+  
+  <!-- القائمة الجانبية -->
+  <div id="drawer" class="drawer">
+    <a href="?day=1">اليوم الأول</a>
+    <a href="?day=2">اليوم الثاني</a>
+    <a href="?day=3">اليوم الثالث</a>
+    <a href="?day=4">اليوم الرابع</a>
+    <a href="?day=5">اليوم الخامس</a>
+    <a href="?day=6">اليوم السادس</a>
+    <a href="?day=7">اليوم السابع</a>
+    <a href="?day=8">اليوم الثامن</a>
+    <a href="?day=9">اليوم التاسع</a>
+    <a href="?day=10">اليوم العاشر</a>
+    <a href="?day=11">اليوم الحادي عشر</a>
+    <a href="?day=12">اليوم الثاني عشر</a>
+    <a href="?day=13">اليوم الثالث عشر</a>
+    <a href="?day=14">اليوم الرابع عشر</a>
+    <a href="?day=15">اليوم الخامس عشر</a>
+    <a href="?day=16">اليوم السادس عشر</a>
+    <a href="?day=17">اليوم السابع عشر</a>
+    <a href="?day=18">اليوم الثامن عشر</a>
+    <a href="?day=19">اليوم التاسع عشر</a>
+    <a href="?day=20">اليوم العشرون</a>
+    <a href="?day=21">اليوم الحادي والعشرون</a>
+    <a href="?day=22">اليوم الثاني والعشرون</a>
+    <a href="?day=23">اليوم الثالث والعشرون</a>
+    <a href="?day=24">اليوم الرابع والعشرون</a>
+    <a href="?day=25">اليوم الخامس والعشرون</a>
+    <a href="?day=26">اليوم السادس والعشرون</a>
+    <a href="?day=27">اليوم السابع والعشرون</a>
+    <a href="?day=28">اليوم الثامن والعشرون</a>
+    <a href="?day=29">اليوم التاسع والعشرون</a>
+    <a href="?day=30">اليوم الثلاثون</a>
+  </div>
+  
+  <!-- المحتوى الأساسي -->
+  <main class="main-content">
+    <!-- وصف التحدي -->
+    <div class="container">
+      <h2>وصف التحدي</h2>
+      <textarea id="challengeDescription" readonly></textarea>
+    </div>
+
+    {% extends 'base.html' %}
+    {% block content %}
+    <div class="animate" style="padding: 20px;">
+      <!-- محتوى الصفحة القديم هنا -->
+      <div class="problem-description">
+          وصف التحدي (اتجاه عربي)
+      </div>
+      
+      <div class="code-editor">
+          <textarea dir="ltr" placeholder="اكتب الكود هنا..."></textarea>
+      </div>
+    </div>
+    {% endblock %}
+    
+    <!-- حل العميل -->
+    <div class="container">
+      <h2>حل العميل (بايثون)</h2>
+      <textarea id="clientSolution" placeholder="أدخل الحل هنا..."></textarea>
+      <button id="checkBtn">تحقق من الحل</button>
+      <!-- رسالة النتيجة -->
+      <div id="resultMessage"></div>
+    </div>
+    
+    <!-- الحل الصحيح المخفي -->
+    <div class="container">
+      <h2>الحل الصحيح</h2>
+      <button onclick="toggleSolution()">إظهار/إخفاء الحل الصحيح</button>
+      <div id="expectedSolutionDiv" class="hidden-solution">
+        <textarea id="expectedSolution" readonly style="height: 569px;"></textarea>
+      </div>
+    </div>
+  </main>
+  
+  <script type="text/javascript">
+    // تبديل القائمة الجانبية
+    function toggleDrawer() {
+      var drawer = document.getElementById("drawer");
+      var mainContent = document.querySelector(".main-content");
+      drawer.classList.toggle("open");
+      mainContent.classList.toggle("shifted");
+    }
+    
+    // إظهار/إخفاء الحل الصحيح
+    function toggleSolution() {
+      var solDiv = document.getElementById("expectedSolutionDiv");
+      solDiv.style.display = (solDiv.style.display === "block") ? "none" : "block";
+    }
+    
+    // الحصول على معطيات الرابط
+    function getQueryParam(param) {
+      var urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+    
+    // تمييز الرابط النشط في القائمة
+    function markActiveLink() {
+      var day = getQueryParam("day") || "1";
+      var links = document.querySelectorAll("#drawer a");
+      links.forEach(function(link) {
+        if(link.getAttribute("href") === "?day=" + day) {
+          link.classList.add("active");
+        } else {
+          link.classList.remove("active");
+        }
+      });
+    }
+    
+    // تحديات الأيام وحلولها
+    var challenges = {
+      "1": "قم بكتابة الدالة اسمها: prime_numbers تستقبل عددين، كلاهما عدد صحيح، ثم تقوم الدالة بإرجاع مصفوفة تحتوي على جميع الأرقام الأولية بين هذين الرقمين.",
+      "2": "قم بكتابة الدالة اسمها: remove_duplicate تستقبل مصفوفة من نوع integer، تقوم الدالة بحذف العناصر المتكررة من المصفوفة ثم تُعيد المصفوفة الجديدة.",
+      "3": "قم بكتابة الدالة اسمها: countdown تستقبل عدد صحيح، تقوم بالعد التنازلي من ذلك العدد بثلاث أرقام وصولاً إلى الصفر، ثم تُعيد مصفوفة من الأعداد الزوجية مرتبة تصاعدياً. إذا كان العدد المُمر أقل من أو يساوي 3، تُعيد [0].",
+      "4": "قم بكتابة الدالة اسمها: get_saudi_traditional_dance تأخذ اسم المنطقة وتُعيد اسم اللعبة التراثية الخاصة بها؛ وإذا لم تكن متوفرة تُعيد \"لعبة غير معروفة\".",
+      "5": "قم بكتابة الدالة اسمها: array_root تستقبل مصفوفة من نوع double، وتقوم بحساب الجذر التربيعي لكل عنصر ثم تُعيد النتيجة في مصفوفة جديدة.",
+      "6": "قم بكتابة الدالة اسمها: isPalindrome تأخذ نصاً (string) وتُعيد true إذا كانت الجملة Palindrome و false إذا لم تكن كذلك.",
+      "7": "قم بكتابة الدالة اسمها: repetitions تستقبل نصاً (string) وتُعيد العدد الذي يمثل أطول تكرار متتالي لحرف في النص.",
+      "8": "قم بكتابة الدالة اسمها: factorial تستقبل عدد صحيح وتُعيد مضروب العدد (factorial).",
+      "9": "قم بكتابة الدالة اسمها: str_len_comparison تستقبل مصفوفة من القيم النصية، وتقارن بين طول الأحرف في جميع النصوص. تُعيد true إذا كان طول كل النصوص متطابقاً، و false إذا لم يكن كذلك. إذا كانت المصفوفة فارغة أو تحتوي على عنصر واحد فقط تُعيد false.",
+      "10": "قم بكتابة دالة اسمها: trailingZeroes لحساب عدد الأصفار المترادفة في نهاية ناتج حساب n! (المضاعف):\nالمدخل: عدد صحيح n\nالمطلوب: إرجاع عدد الأصفار المترادفة في نهاية n!\nالفكرة: حساب عدد عوامل 5 في n! باستخدام القسمة المتكررة على 5\nمثال:\nالمدخل: 25\nالمخرج: 6 (لأن 25//5 = 5، 5//5 = 1، 5+1 = 6)",
+      "11": "قم بكتابة دالة اسمها: most_frequent_element تستقبل مصفوفة array من نوع integer ، تقوم الـدالة most_frequent_element بإرجاع أكثر القيم تكرارا في المصفوفة",
+      "12": "قم بكتابة دالة اسمها: missingLetter تستقبل قيمة نصية من نوع String , تقوم الدالة missingLetter بالبحث عن الحرف المفقود حسب الترتيب الأبجدي لأول حرف مدخل في النص , ثم قم بارجاع الحرف المفقود من نوع String و في حالة عدم فقدان حرف قم بارجاع No Missing Letter .",
+      "13": "قم بكتابة دالة اسمها: find_prefix  تستقبل قيمة نصية String تحتوي على جزء من بداية كلمة، ومصفوفة Array تحتوي على عدة كلمات. تقوم الدالة بإرجاع مصفوفة تحتوي على الكلمات التي تبدأ بنفس النص الذي تم تمريره. إن لم تحتوي المصفوفة على شيء مطابق، فقم بإرجاع مصفوفة فيها القيمة النصيّة 'No matches'",
+      "14": "قم بكتابة دالة اسمها: sortByLength تستقبل قيمة نصية من نوع string تقوم الـدالة sortByLength بترتيب الكلمات حسب طولها من الأقصر للأطول وفي حال كانت هناك كلمتين بنفس الطول يكون الترتيب ابجدي ثم تقوم الدالة بإرجاع النتيجة من نوع string",
+      "15": "قم بكتابة دالة اسمها: unique تستقبل مصفوفة من نوع integer تقوم الدالةـ unique بالبحث عن الأرقام الفريدة في المصفوفة وثم تقوم بإرجاعها داخل مصفوفة جديدة.",
+      "16": "قُم بكتابة دالة اسمها: similarOrdered تستقبل قيمتين نصية. تقوم الدالة بترتيب القيمتين النصية أبجدياً وإرجاع أطول حد تشابه بين القيمتين النصية . يتم أيضاً إزالة الأحرف المكررة في حد التشابه والإكتفاء بحرف واحد. في حال لم يُوجد تشابه بين القيمتين النصية، سيتم إرجاع القيمة No matches found .",
+      "17": "قم بكتابة دالة اسمها: date_formating تستقبل متغير من نوع string بالشكل yyyy-mm-dd ، ثم تقوم الدالة بإرجاع النتيجة من نوع string بعد القيام بتغير الشكل الى dd-mm-yyyy.",
+      "18": "قم بكتابة دالة اسمها: convert_number_format التي تستقبل متغير من نوع string يحتوي على رقم إما بنظام العد الست عشري (hexadecimal) أو النظام العشري (decimal). الدالة يجب أن تقوم بتحديد نوع الرقم (هل هو عشري أم ست عشري) ثم تعكس تنسيقه. إذا كان الرقم بنظام العد الست عشري، تقوم بتحويله إلى نظام العد العشري، وإذا كان الرقم بنظام العد العشري، تقوم بتحويله إلى نظام العد الست عشري وتقوم الداله بارجاع القيمه المعكوسة.",
+      "19": "قم بكتابة دالة اسمها: longestAlternatingSubstring تستقبل قيمة نصية من نوع string. تقوم هذه الدالة بإيجاد أطول سلسلة فرعية بالتناوب بين أعداد فردية وأعداد زوجية. والمعنى من ذلك أن يجب ان تكون السلسلة مكونة من عدد زوجي ويتليه عدد فردي.. ولا يشترط في ذلك ان تبدأ السلسلة بعدد زوجي. فمن الممكن أن تبدأ بعدد زوجي أو فردي.",
+      "20": "قم بكتابة دالة اسمها: longestArithmeticSubstring تستقبل مصفوفة من الأعداد الصحيحة من نوع list[int]. تقوم هذه الدالة بإيجاد أطول سلسلة فرعية تكون متتالية وبفارق ثابت (متتابعة حسابية).\nبمعنى أن الفارق بين كل عددين متتاليين في السلسلة الفرعية يجب أن يكون ثابتًا.\nإذا كانت القائمة خالية أو تحتوي على عنصر واحد فقط، يمكن إعادة 0 كطول أطول سلسلة.\nإذا وُجدت عدة سلاسل فرعية متساوية في الطول، يمكنك إعادة أي منها.",
+      "21": "قم بكتابة دالة اسمها: arrowDuplicates تستقبل متغير من نوع string يتكون من حروف، تقوم الدالة باستبدال الاحرف باحد الرمزين (>) و(<) بحيث اذا كان الحرف مكرر في الكلمة يتحول الى > واذا كان الحرف لا يتكرر يتحول الى < \nحيث النتيجة للدالة تكون من نوع string",
+      "22": "قم بكتابة دالة اسمها: longestPrimeDiffSubarray تستقبل مصفوفة arr من الأعداد الصحيحة من نوع list[int]. تقوم الدالة بإيجاد أطول سلسلة فرعية متجاورة (subarray) بحيث يكون الفرق المطلق بين كل عنصرين متتاليين عددًا أوليًا.\nملحوظات :\nإذا كانت القائمة الداخله فارغة تعيد الدالة قائمة فارغة.\nإذا كانت القائمة تحتوي على عنصر واحد فقط يمكن إعادة القائمة كما هي.\nإذا وجدت أكثر من سلسلة فرعية بنفس الطول الأقصى تعيد الدالة أول سلسلة فرعية تظهر في القائمة.\nيُمكن اعتبار سلسلتين مكونتين من عنصرين صحيحيتين إذا تحققت العلاقة بينهما.",
+      "23": "قم بكتابة دالة اسمها: wordRelationships تقوم بتحليل النصوص واستخراج العلاقات بين الكلمات باستخدام القواميس. الدالة يجب أن تقوم بالآتي:\nإنشاء قاموس بحيث تكون كل كلمة “مفتاح”، والقيمة هي قاموس آخر يحتوي على الكلمات التي تليها مباشرة وعدد مرات ظهور كل كلمة تالية.\n\nمثال للفهم ( ضروري تشوفه عشان تفهم اللي الدالة بتعمله)\nعندي txt :\ntext = 'Programming is fun and challenging. Programming teaches logical thinking. Programming is fun.'\nالداله هتقوم ماسكة كل كلمه مثلا اول كلمه اللي هي : Programming و تعملها كا key لقاموس وبعدين تعمل ال value بتاع ال key دا : عباره عن قاموس كل key في القاموس دا عبارة عن كل الكلمات اللي اتت بعد كل كلمة Programming في النص و ال value بتاع كل كلمة يكون عدد تكرارها (يعني جات كام مره بعد كلمة ال Programming ) يعني اول key في قاموس الحل هيبقي بتاع ال Programming هيبقي كدا :\n{'programming': {'is': 2, 'teaches': 1}}\nخد بالك انه ال value بتبيقي عباره عن عدد تكرار الكلمه ورا الكلمه اللي في ال key يعني لو الكلمه متكرره تاني بس مش ورا الكلمه اللي في ال key يبقي بتتحسب عدد المرات اللي كانت قدام كلمة ال key فيهم يعني مثلا في نفس النص اللي فوق لو ال key بتاعنا هو كلمة : challenging فا اذا ال value هيكون قاموس فيه اللي بيظهر بعدها في اي حته في النص : طيب هي كا كلمة ظهرت مره واحده بس في النص تمام يبقي كدا اكيد وراها كلمه واحده : طيب ايه هي الكلمه اللي جات بعدها :  '.' تمام طيب ال value بتاع ال '.' دي هيبقي كام ؟ هيبقي 1 مش 3 رغم ال '.' متكرره في النص 3 مرات بس متكرره بعد كلمة : challenging فقط مره واحده بس\nوبتالي قاموسها هيبقي كدا : \n'challenging': {'.': 1}\n",
+      "24": "قم بكتابة دالة اسمها: isEmail تستقبل قيمة نصية من نوع string . تقوم الدالة بالتحقق ما إذا كانت القيمة النصية تحتوي على بريد إلكتروني صحيح أم لا، عن طريق إرجاع قيمة من نوع boolean .\nشروط البريد الإلكتروني الصحيح:\n 1. أن لا يبدأ رمز\n 2. أن يحتوي الجزء الأول على خانة على الأقل (ما قبل الرمز `@`)\n 3. أن يحتوي على الرمز `@`\n 4. أن يتبع رمز `@` خانة على الأقل\n 5. أن يتبعه بعد ذلك بالرمز `.`\n 6. أن يتبع الرمز `.` بخانتين على الأقل\n 7. لا مانع من أن يحتوي الجزء الذي يسبق `@` على الرموز التالية `_.-`",
+      "25": "قم بكتابة دالة اسمها: coins_combinations تقوم الدالة باستقبال عدد صحيح من نوع integer يمثل هذا الرقم المبلغ النهائي. وتستقبل مصفوفة متكونة من اعداد صحيحة integer وهذه المصفوفة تمثل العملات المعدنية المتوفرة. تقوم الدالة بحساب عدد الطرق الممكنة للوصول للمبلغ النهائي عن طريق جمع ارقام العملات المعدنية.\nمثال:\n إذا كانت المدخلات `coins = [2,5] ` والمبلغ `amount=10` فإن الناتج سيكون 2 حيث بالإمكان انشاء التركيبات التالية: `[2,2,2,2,2]` و `[5,5] ` كل تركيبة مجموعها يساوي `المبلغ (amount) = 10`",
+      "26": "قم بكتابة دالة اسمها: calculateActiveDonationMinutes تستقبل مصفوفة من الفترات الزمنية، حيث يتم تمثيل كل فترة على شكل سلسلة نصية بصيغة 'start-end' . هنا يمثل start و end الدقائق التي تبدأ وتنتهي فيها الحملة بعد منتصف الليل.\nعلى سبيل المثال، إذا كانت إحدى الفترات هي '60-120' وأخرى '110-180' , فينبغي دمجهما ليصبحا فترة واحدة تمتد من الدقيقة 60 إلى الدقيقة 180، بحيث لا يتم احتساب الدقيقة المشتركة مرتين.",
+
+
+    };
+    
+    // لكل يوم 4 اختبارات (كل قيمة عبارة عن tuple من المدخلات)
+    var testInputs = {
+      "1": [[1, 10], [10, 20], [20, 30], [5, 50]],
+      "2": [[[1,2,2,3,4,3,5]], [[7,7,7,7]], [[1,2,3,4]], [[1,1,2,2,3,3]]],
+      "3": [[10], [15], [3], [20]],
+      "4": [["الوسطى"], ["الشمالية"], ["الجنوبية"], ["غير موجود"]],
+      "5": [[[4.0, 9.0, 16.0]], [[1.0, 25.0, 36.0]], [[0.0, 100.0]], [[9.0]]],
+      "6": [["Madam"], ["Racecar"], ["Hello"], ["A man, a plan, a canal, Panama"]],
+      "7": [["MOHAMMMED"], ["AAAABBB"], ["ABABABAB"], ["ZZZzzz"]],
+      "8": [[5], [7], [1], [0]],
+      "9": [[["abc", "def"]], [["abc", "defg"]], [["hello", "world"]], [["a", "b", "c"]]],
+      "10": [[25], [10], [100], [1]],
+      "11": [[13, 2, 1, 2, 10, 2, 1, 1, 2, 2], [1, 2, 3, 4, 1, 5, -5, -5, -5, -5, -5, 6],[1, 2, 3, 3, 3, 3],[0, 5, 6, 2, 1, 5]],
+      "12": [['rsuv'],['ghijk'],['vwyz'],['abcd'],['bcdf'],['cabde']],
+      "13": [[['Nouf', 'Abdullah'],'Gh'],[['Reassemble', 'Remainder', 'Room', 'Receive'],'re'],[['Compared', 'Coding', 'Career', 'Coderhub', 'Cold', 'Call'],'co'],[['Save', 'Saudi', 'Satr', 'Send', 'Salt', 'Super', 'Sample'],'sa'],[['Apple', 'Application', 'April', 'Banana', 'Apex'],'ap']],
+      "14": [['Enjoy the little things'],['Life is beautiful'],['Follow your dreams'],['Have a wonderful day'],['I see you'],['Get in the boat'],['Do you speak English']],
+      "15": [[1, 1, 1, 2, 1, 1],[2, 4, -2],[2, 3, 2, 6, 2],[3, -4, 3, 3, 3],[4, 4, 5, 4],[10, 20, 10, 10, 20, 30],[99, 1, 1, 1],[0, 7, 7, 7, 0, 0, 9],[100],[2, 2, 3, 3, 4, 4, 5]] ,
+      "16": [['washing','waiting'],['me','meet'],['Reem','Nouf'],['abcdefggghi','abcdefghirr'],['programming','algorithm'],['developer','people'],['computer','science'],['apple','banana']],
+      "17": [['2020-01-01'],['2021-01-01'],['1954-09-01'],['2000-12-07'],['1999-05-15'],['1980-07-23'],['1963-08-19'],['2022-09-17']],
+      "18": [['255'],['a1'],['1000'],['3f'],['123'],['1a3'],['abc'],['0']],
+      "19": [['2105787220351146'],['1263654081858902'],['334090830025543'],['6769423178839463'],['9876543210'],['111223344556677889900'],['2468013579'],['1357924680']],
+      "20": [[[1, 3, 5, 7, 9, 2, 4, 6, 8]],[[10, 7, 4, 1, -2, 0, 2, 4, 6]],[[5, 5, 5, 5, 5]],[[1, 2, 4, 7, 10, 13]],[[10, 20, 30, 15, 25, 35, 45, 60]],[[1]],[[-5, -2, 1, 4, 7, 10]],[[1, 3, 6, 10, 15]],[[1, 3, 5, 7, 2, 4, 6, 8]],[[7, 5, 2, 10, 12, 6]],[[-10, -5, 0, 5, 10]],[[1, 5, 10, 5, 1, 6, 11, 16]]],
+      "21": [['Hi'],['Bb'],['SAFCSP'],['Java'],['aabbcc'],['abcdef'],['hello'],['AaBb'],['zzzzz'],['aaabaaa']],
+      "22": [[[17, 19, 23, 28, 31, 37]],[[2, 3, 5, 7, 11, 13, 17]],[[30, 31, 33, 37, 42, 47, 53]],[[10, 13, 16, 19, 22, 25, 28]],[[8, 14, 20, 26, 32, 38]],[[41, 44, 47, 50, 53, 56]],[[1, 3, 6, 9, 15, 21]],[[29, 31, 34, 38, 41, 47]],[[50, 53, 56, 60, 67, 72]],[[1, 4, 7, 10, 14, 18, 23]]],
+      "23": [['Programming is fun and challenging. Programming teaches logical thinking. Programming is fun.'],['Hello world. Hello again.'],['apple apple apple banana banana orange apple.'],['I like programming, I love coding! Do you like it?'],['Cat cat Dog dog cat Dog.'],['1 2 3 1 4 1 5.'],['Test test test test.'],['Python is fun, Python teaches programming. Python is amazing!'],['  Hello world!  How are you doing?   ']],
+      "24": [['example_name@example.com'],['ex.am.ple@example.com'],['example-name@example.com'],['user123@example.com'],['.example@example.com'],['exampleexample.com'],['example@@example.com'],['example@example.c'],['example@example.com'],['@example.com'],['example@com'],['example@example.c']],
+      "25": [[4, [1, 2]],[10, [5, 2, 3]],[0, [3, 5, 7]],[11, [5, 7]],[3, [2]],[5, [0, 5]],[5, []],[3, [4, 5, 6]]],
+      "26": [[["10-20", "15-25", "30-40", "35-45", "50-60"]],[["10-20", "30-40", "50-60"]],[["10-20", "20-30"]],[["10-50", "20-40"]],[['60-120']],[['60-120', '110-180']],[['60-120', '130-150']],[['0-30', '25-50', '45-60']]],
+
+
+    };
+
+
+    
+    var solutions = {
+      "1": "# الحل\n\ndef is_prime(n):\n    if n < 2:\n        return False\n    for i in range(2, int(n ** 0.5) + 1):\n        if n % i == 0:\n            return False\n    return True\n\ndef prime_numbers(a, b):\n    if a > b:\n        a, b = b, a  # التأكد أن a هو الأصغر\n    primes = []\n    for num in range(a, b + 1):\n        if is_prime(num):\n            primes.append(num)\n    return primes",
+      "2": "# الحل\n\ndef remove_duplicate(arr):\n    lst = []\n    for i in arr:\n        if i not in lst:\n            lst.append(i)\n    return lst",
+      "3": "# الحل\n\ndef countdown(num):\n    even_nums = []\n    for i in range(num, 0, -3):\n        if num == i:\n            continue\n        if i % 2 == 0:\n            even_nums.append(i)\n    if not even_nums:\n        return [0]\n    else:\n        return sorted(even_nums)",
+      "4": "# الحل\n\ndef get_saudi_traditional_dance(region):\n    if region == \"الشمالية\":\n        result = \"الدحة\"\n    elif region == \"الوسطى\":\n        result = \"العرضة النجدية\"\n    elif region == \"الجنوبية\":\n        result = \"الخطوة الجنوبية\"\n    elif region == \"الشرقية\":\n        result = \"الفجري\"\n    else:\n        result = \"لعبة غير معروفة\"\n    return result",
+      "5": "# الحل\n\ndef array_root(arr):\n    new = []\n    for i in arr:\n        n = i ** 0.5\n        new.append(n)\n    return new",
+      "6": "# الحل\n\ndef isPalindrome(s):\n    s = s.lower()\n    filtered_s = ''.join(char for char in s if char.isalnum())\n    return filtered_s == filtered_s[::-1]",
+      "7": "# الحل\n\ndef repetitions(s):\n    max_count = 0\n    current_count = 0\n    previous_char = ''\n    for char in s:\n        if char == previous_char:\n            current_count += 1\n        else:\n            current_count = 1\n        previous_char = char\n        max_count = max(max_count, current_count)\n    return max_count",
+      "8": "# الحل\n\ndef factorial(number):\n    the_factorial = 1\n    while number > 0:\n        the_factorial *= number\n        number -= 1\n    return the_factorial",
+      "9": "# الحل\n\ndef str_len_comparison(words):\n    if len(words) <= 1:\n        return False\n    else:\n        for i in words:\n            if len(i) != len(words[0]):\n                return False\n        return True",
+      "10": "# الحل\n\ndef trailingZeroes(n):\n    sum_of_all_result = 0\n    m = n // 5\n    sum_of_all_result += m\n    while m >= 5:\n        m = m // 5\n        sum_of_all_result += m\n    return sum_of_all_result",
+      "11": "#الحل\n\ndef most_frequent_element(arr):\n    counts = {}\n    for i in arr:\n        if i not in counts.keys():\n            counts[i] = 1\n        else:\n            counts[i] += 1\n    top = max(counts.values())\n    for i in counts.keys():\n        if counts[i] == top :\n            return i",
+      "12": "#الحل\n\ndef missingLetter(txt):\n    all = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j','k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't','u', 'v', 'w', 'x', 'y', 'z']\n    for i in range(len(all)):\n        if all[i] == txt[0]:\n            for n in range(len(txt)):\n                if txt[n] != all[i]:\n                    return all[i]\n                i += 1\n            return 'No Missing Letter'",
+      "13": "#الحل\n\ndef find_prefix(words,text):\n    lista = []\n    for n in words :\n        i = n.lower()\n        if text.lower() in i[0:len(text)+1:]:\n            lista.append(n)\n    if not lista:\n        lista.append('No matches found')\n    return lista",
+      "14": "#الحل\n\ndef sortByLength(txt):\n    def filter_index(index):\n        return index['len']\n    length = []\n    for word in txt.split() :\n        length.append({\n            'word' : word,\n            'len' : len(word)\n        })\n    new = sorted(length, key= filter_index)\n    last = []\n    for i in new : \n        last.append(i['word'])\n    return ' '.join(last)",
+      "15": "#الحل\n\ndef unique(arr):\n    lista = []\n    count = {}\n    for i in arr:\n        if i not in count:\n            count[i] = 1\n        else:\n            count[i] += 1\n    mininmum = min(count.values())\n    for i in count:\n        if count[i] == mininmum:\n            lista.append(i)\n    return lista",
+      "16": "#الحل\n\ndef similarOrdered(word1,word2):\n    def process(word):\n        '''\n        الداله دي بترجع الكلمه بعد ما تظبطها من تحويل لحروف صغيره و ترتيبها ابجديا و مسح للتكرار \n        '''\n        return ''.join(sorted(set(word.lower())))\n\n\n    s1 = process(word1)\n    s2 = process(word2)\n\n\n    max_sub = ''\n    for i in range(len(s1)):\n        for j in range(i + 1, len(s1) + 1):\n            candidate = s1[i:j]\n            if candidate in s2:\n                if len(candidate) > len(max_sub):\n                    max_sub = candidate\n    return max_sub if max_sub else 'No matches found' ",
+      "17": "#الحل\n\ndef date_formating(date):\n    day = date[8:]\n    month = date[5:7]\n    year = date[0:4]\n    return f'{day}-{month}-{year}'",
+      "18": "#الحل\n\ndef convert_number_format(number):\n\n    if all(c in '0123456789' for c in number):\n        return hex(int(number))[2:]\n\n    else:\n        return str(int(number, 16))",
+      "19": "#الحل\n\ndef longestAlternatingSubstring(digits):\n    max_substring = ''\n    current_substring = digits[0]\n    for i in range(1, len(digits)):\n        if (int(digits[i-1]) % 2 == 0 and int(digits[i]) % 2 == 1) or (int(digits[i-1]) % 2 == 1 and int(digits[i]) % 2 == 0):\n            current_substring += digits[i]\n        else:\n            if len(current_substring) > len(max_substring):\n                max_substring = current_substring\n            current_substring = digits[i]\n    if len(current_substring) > len(max_substring):\n        max_substring = current_substring\n    return max_substring",
+      "20": "#الحل\n\ndef longestArithmeticSubstring(nums):\n    if len(nums) < 2:\n        return []\n    max_length = 0\n    current_length = 2\n    common_diff = nums[1] - nums[0]\n    start_index = 0\n    best_subarray = []\n    for i in range(2, len(nums)):\n        if nums[i] - nums[i - 1] == common_diff:\n            current_length += 1\n        else:\n            if current_length > max_length:\n                max_length = current_length\n                best_subarray = nums[start_index:i]\n            # لا نضيف السلسلة إذا كان طولها نفس طول السلسلة السابقة\n            common_diff = nums[i] - nums[i - 1]\n            current_length = 2\n            start_index = i - 1\n    if current_length > max_length:\n        best_subarray = nums[start_index:]\n    return best_subarray",
+      "21": "#الحل\n\ndef arrowDuplicates(word):\n    new_word = word.lower()\n    for i in range(len(new_word)):\n        if i != 0:\n            if (new_word[i] in new_word[i+1:]) or (new_word[i] in new_word[i-1::-1]):\n                new_word = new_word.replace(new_word[i],'<')\n            else:\n                new_word = new_word.replace(new_word[i],'>')\n        else:\n            if (new_word[i] in new_word[i+1:]):\n                new_word = new_word.replace(new_word[i],'<')\n            else:\n                new_word = new_word.replace(new_word[i],'>')\n    return new_word",
+      "22": "#الحل\n\ndef is_prime(n):\n    ''' دالة تتحقق مما إذا كان العدد n أوليًا '''\n    if n < 2:\n        return False\n    for i in range(2, int(n ** 0.5) + 1):\n        if n % i == 0:\n            return False\n    return True\ndef longestPrimeDiffSubarray(arr):\n    ''' دالة لإيجاد أطول سلسلة فرعية يكون الفرق بين عناصرها عددًا أوليًا اللي هي دالة الحل يعني'''\n    if not arr:\n        return []\n    max_subarray = []\n    current_subarray = [arr[0]]\n    for i in range(1, len(arr)):\n        # تحقق من كون الفرق بين العنصر الحالي والسابقة أوليا\n        if is_prime(abs(arr[i] - arr[i - 1])):\n            current_subarray.append(arr[i])\n        else:\n            if len(current_subarray) > len(max_subarray):\n                max_subarray = current_subarray[:]  # حفظ نسخة من السلسلة الحالية\n            current_subarray = [arr[i]]\n    if len(current_subarray) > len(max_subarray):\n        max_subarray = current_subarray\n    return max_subarray",
+      "23": "#الحل\n\ndef wordRelationships(text):\n    text = text.replace('.', ' .').replace(',', ' ,')  # التأكد من فاصل الكلمات\n    words = text.lower().split()\n    relations = {}\n    for i in range(len(words) - 1):\n        word = words[i]\n        next_word = words[i + 1]\n        if word not in relations:\n            relations[word] = {}\n        if next_word not in relations[word]:\n            relations[word][next_word] = 1\n        else:\n            relations[word][next_word] += 1\n    return relations",
+      "24": "#الحل\n\ndef isEmail(email):\n    if not email or not email[0].isalnum():\n        return False\n\n    if '@' not in email or '.' not in email:\n        return False\n\n    at_index = email.index('@')\n    if at_index == 0 or at_index == len(email) - 1:\n        return False\n\n    local_part = email[:at_index]\n    domain_part = email[at_index + 1:]\n\n    if not local_part or any(c not in '-_.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789' for c in local_part):\n        return False\n\n    if '.' not in domain_part or domain_part[0] == '.':\n        return False\n\n    last_dot_index = email.rindex('.')\n    if len(email) - last_dot_index - 1 < 2:\n        return False\n\n    if email.rindex('@') > last_dot_index:\n        return False\n\n    return True",
+      "25": "#الحل\n\ndef coins_combinations(amount, coins):\n    dp = [0] * (amount + 1)\n    dp[0] = 1\n\n    for coin in coins:\n        for i in range(coin, amount + 1):\n            dp[i] += dp[i - coin]\n    return dp[amount]",
+      "26": "#الحل\n\ndef calculateActiveDonationMinutes(intervals):\n    # بنحول الفترات النصية لأزواج أرقام\n    intervals = [list(map(int, interval.split('-'))) for interval in intervals]\n\n    # بنرتب الفترات حسب البداية\n    intervals.sort(key=lambda x: x[0])\n\n    # مصفوفة عشان نحفظ الفترات اللي دمجناها\n    merged_intervals = []\n\n    for start, end in intervals:\n        # لو مفيش تداخل مع اخر فترة مدمجة يبقي هنضيف فترة جديدة\n        if not merged_intervals or start > merged_intervals[-1][1]:\n            merged_intervals.append([start, end])\n        else:\n            # لو في تداخل أو الفترات لازقة في بعض يبقي نعمل دمج ليهم\n            merged_intervals[-1][1] = max(merged_intervals[-1][1], end)\n\n    #هنا بنحسب إجمالي الوقت النشط\n    active_minutes = sum(end - start for start, end in merged_intervals)\n\n    return active_minutes",
+
+
+    };
+    
+    var day = getQueryParam("day") || "1";
+    
+    if(challenges[day]) {
+      document.getElementById("challengeDescription").value = challenges[day];
+    } else {
+      document.getElementById("challengeDescription").value = "تحدي غير متوفر لهذا اليوم.";
+    }
+    
+    if(solutions[day]) {
+      document.getElementById("expectedSolution").value = solutions[day];
+    } else {
+      document.getElementById("expectedSolution").value = "# لا يوجد حل مخفي لهذا اليوم.";
+    }
+    
+    markActiveLink();
+    
+    function markActiveLink() {
+      var links = document.querySelectorAll("#drawer a");
+      links.forEach(function(link) {
+        if(link.getAttribute("href") === "?day=" + day) {
+          link.classList.add("active");
+        } else {
+          link.classList.remove("active");
+        }
+      });
+    }
+    
+    // إظهار رسالة النتيجة في العنصر resultMessage
+    function show_result(msg, status) {
+      var resultDiv = document.getElementById("resultMessage");
+      if(status === "success") {
+        resultDiv.innerHTML = '<div class="result success">' + msg + '</div>';
+      } else {
+        resultDiv.innerHTML = '<div class="result error">' + msg + '</div>';
+      }
+    }
+  </script>
+  
+  <!-- سكربت بايثون للتحقق من الحل باستخدام Brython -->
+  <script type="text/python">
+    from browser import document, alert
+    
+    expectedFunctionNames = {
+        "1": "prime_numbers",
+        "2": "remove_duplicate",
+        "3": "countdown",
+        "4": "get_saudi_traditional_dance",
+        "5": "array_root",
+        "6": "isPalindrome",
+        "7": "repetitions",
+        "8": "factorial",
+        "9": "str_len_comparison",
+        "10": "trailingZeroes",
+        "11": "most_frequent_element",
+        "12": "missingLetter",
+        "13": "find_prefix",
+        "14": "sortByLength",
+        "15": "unique",
+        "16": "similarOrdered",
+        "17": "date_formating",
+        "18": "convert_number_format",
+        "19": "longestAlternatingSubstring",
+        "20": "longestArithmeticSubstring",
+        "21": "arrowDuplicates",
+        "22": "longestPrimeDiffSubarray",
+        "23": "wordRelationships",
+        "24": "isEmail",
+        "25": "coins_combinations",
+        "26": "calculateActiveDonationMinutes",
+
+
+    }
+    
+    # testInputs الآن لكل يوم عبارة عن قائمة من 4 اختبارات (كل اختبار هو tuple)
+    testInputs = {
+        "1": [(1,10), (10,20), (20,30), (5,50)],
+        "2": [([1,2,2,3,4,3,5],), ([7,7,7,7],), ([1,2,3,4],), ([1,1,2,2,3,3],)],
+        "3": [(10,), (15,), (3,), (20,)],
+        "4": [( "الوسطى",), ( "الشمالية",), ( "الجنوبية",), ( "غير موجود",)],
+        "5": [([4.0,9.0,16.0],), ([1.0,25.0,36.0],), ([0.0,100.0],), ([9.0],)],
+        "6": [( "Madam",), ( "Racecar",), ( "Hello",), ( "A man, a plan, a canal, Panama",)],
+        "7": [( "MOHAMMMED",), ( "AAAABBB",), ( "ABABABAB",), ( "ZZZzzz",)],
+        "8": [(5,), (7,), (1,), (0,)],
+        "9": [ (["abc", "def"],), (["abc", "defg"],), (["hello", "world"],), (["a", "b", "c"],) ],
+        "10": [ (25,), (10,), (100,), (1,) ],
+        "11": [([13,2,1,2,10,2,1,1,2,2],), ([1,2,3,4,1,5,-5,-5,-5,-5,-5,6],),([1,2,3,3,3,3],),([0,5,6,2,1,5],)],
+        "12": [('rsuv',),('ghijk',),('vwyz',),('abcd',),('bcdf',),('cabde',)],
+        "13": [(['Nouf', 'Abdullah'], 'Gh'),(['Reassemble', 'Remainder', 'Room', 'Receive'], 're'),(['Compared', 'Coding', 'Career', 'Coderhub', 'Cold', 'Call'], 'co'),(['Save', 'Saudi', 'Satr', 'Send', 'Salt', 'Super', 'Sample'], 'sa'),(['Apple', 'Application', 'April', 'Banana', 'Apex'], 'ap')],
+        "14": [('Enjoy the little things',),('Life is beautiful',),('Follow your dreams',),('Have a wonderful day',),('I see you',),('Get in the boat',),('Do you speak English',)],
+        "15": [([1, 1, 1, 2, 1, 1],),([2, 4, -2],),([2, 3, 2, 6, 2],),([3, -4, 3, 3, 3],),([4, 4, 5, 4],),([99, 1, 1, 1],),([10, 20, 10, 10, 20, 30],),([0, 7, 7, 7, 0, 0, 9],),([100],),([2, 2, 3, 3, 4, 4, 5],)] ,
+        "16": [('washing','waiting'),('me','meet'),('Reem','Nouf'),('abcdefggghi','abcdefghirr'),('developer','people'),('programming','algorithm'),('computer','science'),('apple','banana')],
+        "17": [('2020-01-01',),('2021-01-01',),('1954-09-01',),('1999-05-15',),('2000-12-07',),('1980-07-23',),('1963-08-19',),('2022-09-17',)],
+        "18": [('255',),('a1',),('1000',),('3f',),('123',),('1a3',),('abc',),('0',)],
+        "19": [('2105787220351146',),('1263654081858902',),('334090830025543',),('6769423178839463',),('9876543210',),('111223344556677889900',),('2468013579',),('1357924680',)],
+        "20": [([1, 3, 5, 7, 9, 2, 4, 6, 8],),([10, 7, 4, 1, -2, 0, 2, 4, 6],),([5, 5, 5, 5, 5],),([1, 2, 4, 7, 10, 13],),([10, 20, 30, 15, 25, 35, 45, 60],),([1],),([-5, -2, 1, 4, 7, 10],),([1, 3, 6, 10, 15],),([7, 5, 2, 10, 12, 6],),([1, 3, 5, 7, 2, 4, 6, 8],),([-10, -5, 0, 5, 10],),([1, 5, 10, 5, 1, 6, 11, 16],)],
+        "21": [('Hi',),('Bb',),('SAFCSP',),('Java',),('aabbcc',),('abcdef',),('hello',),('AaBb',),('zzzzz',),('aaabaaa',)],
+        "22": [([17, 19, 23, 28, 31, 37],),([2, 3, 5, 7, 11, 13, 17],),([30, 31, 33, 37, 42, 47, 53],),([10, 13, 16, 19, 22, 25, 28],),([8, 14, 20, 26, 32, 38],),([41, 44, 47, 50, 53, 56],),([1, 3, 6, 9, 15, 21],),([29, 31, 34, 38, 41, 47],),([50, 53, 56, 60, 67, 72],),([1, 4, 7, 10, 14, 18, 23],)],
+        "23": [('Programming is fun and challenging. Programming teaches logical thinking. Programming is fun.',),('Hello world. Hello again.',),('apple apple apple banana banana orange apple.',),('I like programming, I love coding! Do you like it?',),('Cat cat Dog dog cat Dog.',),('1 2 3 1 4 1 5.',),('Test test test test.',),('Python is fun, Python teaches programming. Python is amazing!',),('  Hello world!  How are you doing?   ',)],
+        "24": [('example_name@example.com',),('ex.am.ple@example.com',),('example-name@example.com',),('user123@example.com',),('.example@example.com',),('exampleexample.com',),('example@@example.com',),('example@example.c',),('example@example.com',),('@example.com',),('example@com',),('example@example.c',)],
+        "25": [(4, [1, 2]),(10, [5, 2, 3]),(0, [3, 5, 7]),(11, [5, 7]),(3, [2]),(5, [0, 5]),(5, []),(3, [4, 5, 6])],
+
+      }
+    
+    def check_solution(event):
+        user_code = document["clientSolution"].value
+        expected_code = document["expectedSolution"].value
+        day = document.location.search.split("day=")[1] if "day=" in document.location.search else "1"
+        func_name = expectedFunctionNames.get(day, None)
+        if func_name is None:
+            document["resultMessage"].html = '<div class="result error">لا يوجد دالة متوقعة لهذا اليوم.</div>'
+            return
+        
+        # نحصل على مجموعة الاختبارات لهذا اليوم (قائمة من 4 اختبارات)
+        tests = testInputs.get(day, [])
+        try:
+            expected_namespace = {}
+            exec(expected_code, expected_namespace)
+            if func_name not in expected_namespace:
+                document["resultMessage"].html = '<div class="result error">الحل الصحيح غير معرف بشكل صحيح في الحل المخفي.</div>'
+                return
+            expected_func = expected_namespace[func_name]
+        except Exception as e:
+            document["resultMessage"].html = '<div class="result error">خطأ في تنفيذ الحل الصحيح المخفي: ' + str(e) + '</div>'
+            return
+        
+        try:
+            user_namespace = {}
+            exec(user_code, user_namespace)
+            if func_name not in user_namespace:
+                document["resultMessage"].html = '<div class="result error">لم يتم تعريف الدالة المطلوبة في الحل الخاص بك.</div>'
+                return
+            user_func = user_namespace[func_name]
+        except Exception as e:
+            document["resultMessage"].html = '<div class="result error">خطأ في تنفيذ الحل الخاص بك: ' + str(e) + '</div>'
+            return
+        
+        # اختبار كل مدخل في tests
+        for test in tests:
+            try:
+                expected_result = expected_func(*test)
+                user_result = user_func(*test)
+            except Exception as e:
+                document["resultMessage"].html = '<div class="result error">خطأ أثناء الاختبار: ' + str(e) + '</div>'
+                return
+            if user_result != expected_result:
+                document["resultMessage"].html = '<div class="result error">الحل غير صحيح. جرب مرة أخرى.</div>'
+                return
+        document["resultMessage"].html = '<div class="result success">الحل صحيح!</div>'
+    
+    document["checkBtn"].bind("click", check_solution)
+  </script>
+</body>
+</html>
