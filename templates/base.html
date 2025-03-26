@@ -1,23 +1,45 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>موقع حلول البرمجة</title>
+    <title>CodeMaster - {% block title %}{% endblock %}</title>
     
-    <!-- CSS Files -->
+    <!-- CSS Libraries -->
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
 </head>
-<body>
-    <header style="background: #2c3e50; padding: 1rem;">
-        <h1 style="color: white; text-align: center;">موقع تحديات البرمجة</h1>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="header-gradient">
+        <nav class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <a href="/" class="flex items-center space-x-3">
+                    <img src="{% static 'images/logo.png' %}" class="h-12" alt="Logo">
+                    <span class="text-2xl font-bold text-white animate__animated animate__pulse">
+                        كود ماستر
+                    </span>
+                </a>
+                <div class="flex space-x-8">
+                    <a href="{% url 'problems' %}" class="text-white hover:text-yellow-300 text-lg transition-all">
+                        التحديات
+                    </a>
+                    <a href="{% url 'submit' %}" class="text-white hover:text-yellow-300 text-lg transition-all">
+                        إرسال حل
+                    </a>
+                </div>
+            </div>
+        </nav>
     </header>
 
     {% block content %}{% endblock %}
 
-    <!-- JS Files -->
+    <!-- JavaScript -->
     <script src="{% static 'js/app.js' %}"></script>
 </body>
 </html>

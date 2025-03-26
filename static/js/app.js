@@ -1,7 +1,19 @@
-// Scroll Animation
-document.addEventListener('DOMContentLoaded', () => {
-    const elements = document.querySelectorAll('.animate');
-    elements.forEach(el => {
-        el.classList.add('animate__animated', 'animate__fadeInUp');
+// Scroll Animation Logic
+document.addEventListener('DOMContentLoaded', function() {
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.animate-on-scroll').forEach(element => {
+        observer.observe(element);
     });
 });

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto px-6 py-12">
+    <h1 class="text-4xl font-bold text-center mb-12 text-gray-800 animate-on-scroll">
+        🚀 جميع التحديات البرمجية
+    </h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for problem in problems %}
+        <div class="problem-card animate-on-scroll">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">{{ problem.title }}</h3>
+                    <span class="px-3 py-1 rounded-full text-sm 
+                        {% if problem.difficulty == 'Easy' %}bg-green-100 text-green-800
+                        {% elif problem.difficulty == 'Medium' %}bg-yellow-100 text-yellow-800
+                        {% else %}bg-red-100 text-red-800{% endif %}">
+                        {{ problem.difficulty }}
+                    </span>
+                </div>
+                <div class="problem-description text-gray-600 mb-6">
+                    {{ problem.description|truncatechars:150 }}
+                </div>
+                <div class="text-left">
+                    <a href="{% url 'problem_detail' problem.id %}" 
+                       class="submit-btn inline-block px-6 py-2 text-sm">
+                        ابدأ الحل الآن →
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
